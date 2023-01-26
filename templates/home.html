@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block content %} 
+    <article class="media content-section">
+        <div class="media-body">
+            <h1>Home Page</h1>
+        </div>
+        <div>
+            <body>
+                <form action="/uploadfiles/" enctype="multipart/form-data" method="post">
+                    <input name="files" type="file" multiple>
+                    <input type="submit">
+                </form>
+                <form action="/predict/" method="post">
+                    <input type="submit", name="pred", value="Predict!">
+                    <!--<script>
+                        function hl(){
+                            location.href = "localhost:8000/predict";
+                        }
+                    </script>-->
+                </form>
+            </body>
+        </div>
+    </article>
+{% endblock content %}
