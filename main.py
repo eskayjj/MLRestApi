@@ -18,7 +18,7 @@ class Number(BaseModel):
     number:int
 
 
-@app.get('/')
+@app.get('/') #double decorator
 @app.get('/home', response_class=HTMLResponse)
 async def homepage(request: Request):
     return templates.TemplateResponse('home.html', {"request": request})
