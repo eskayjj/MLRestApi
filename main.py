@@ -25,7 +25,7 @@ async def homepage(request: Request):
 
 @app.post("/predict")
 def predict(request: Request):
-    result = prediction(Image.open('C:/Users/User/AStar Intern/Prototype/RESTApi/FastAPI/tester.png'))
+    result = prediction()
     return templates.TemplateResponse('predict.html', context={'request': request, 'result': result})
 
 @app.post("/uploadfiles/")

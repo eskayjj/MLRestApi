@@ -70,56 +70,58 @@ class CNN(Module):
         X = self.act1(X)
         return X
 
-# define the network
-model = CNN(1).to(device)
+if __name__ == "__main__": #this segment of code is not run if not main
 
-# define the optimization
-criterion = CrossEntropyLoss()
-optimizer = SGD(model.parameters(), lr=0.01, momentum=0.9)    
+    # define the network
+    model = CNN(1).to(device)
 
-# enumerate epochs
-for epoch in range(10):
-    # enumerate mini batches
-    for i, (inputs, targets) in enumerate(train_dl):
-        inputs = inputs.to(device)
-        targets = targets.to(device)
-        # clear the gradients
-        optimizer.zero_grad()
-        # compute the model output
-        yhat = model(inputs)
-        # calculate loss
-        loss = criterion(yhat, targets)
-        # credit assignment
-        loss.backward()
-        # update model weights
-        optimizer.step()
-        print(device, i, epoch)
+    # define the optimization
+    criterion = CrossEntropyLoss()
+    optimizer = SGD(model.parameters(), lr=0.01, momentum=0.9)    
 
-# # evaluate the model
-# def evaluate_model(test_dl, model):
-#     predictions, actuals = list(), list()
-#     for i, (inputs, targets) in enumerate(test_dl):
-#         # evaluate the model on the test set
-#         yhat = model(inputs)
-#         # retrieve numpy array
-#         yhat = yhat.detach().numpy()
-#         actual = targets.numpy()
-#         # convert to class labels
-#         yhat = argmax(yhat, axis=1)
-#         # reshape for stacking
-#         actual = actual.reshape((len(actual), 1))
-#         yhat = yhat.reshape((len(yhat), 1))
-#         # store
-#         predictions.append(yhat)
-#         actuals.append(actual)
-#     predictions, actuals = vstack(predictions), vstack(actuals)
-#     # calculate accuracy
-#     acc = accuracy_score(actuals, predictions)
-#     return acc
+    # enumerate epochs
+    for epoch in range(10):
+        # enumerate mini batches
+        for i, (inputs, targets) in enumerate(train_dl):
+            inputs = inputs.to(device)
+            targets = targets.to(device)
+            # clear the gradients
+            optimizer.zero_grad()
+            # compute the model output
+            yhat = model(inputs)
+            # calculate loss
+            loss = criterion(yhat, targets)
+            # credit assignment
+            loss.backward()
+            # update model weights
+            optimizer.step()
+            print(device, i, epoch)
 
-# evaluate the model
-#acc = evaluate_model(test_dl, model)
-#print('Accuracy: %.3f' % acc)
+    # # evaluate the model
+    # def evaluate_model(test_dl, model):
+    #     predictions, actuals = list(), list()
+    #     for i, (inputs, targets) in enumerate(test_dl):
+    #         # evaluate the model on the test set
+    #         yhat = model(inputs)
+    #         # retrieve numpy array
+    #         yhat = yhat.detach().numpy()
+    #         actual = targets.numpy()
+    #         # convert to class labels
+    #         yhat = argmax(yhat, axis=1)
+    #         # reshape for stacking
+    #         actual = actual.reshape((len(actual), 1))
+    #         yhat = yhat.reshape((len(yhat), 1))
+    #         # store
+    #         predictions.append(yhat)
+    #         actuals.append(actual)
+    #     predictions, actuals = vstack(predictions), vstack(actuals)
+    #     # calculate accuracy
+    #     acc = accuracy_score(actuals, predictions)
+    #     return acc
 
-torch.save(model.state_dict(), 'C:/Users/User/AStar Intern/Prototype/RESTApi/FastAPI/model.pth')
+    # evaluate the model
+    #acc = evaluate_model(test_dl, model)
+    #print('Accuracy: %.3f' % acc)
+
+    torch.save(model.state_dict(), 'C:/Users/User/AStar Intern/Prototype/RESTApi/FastAPI/model.pth')
 
