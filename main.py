@@ -14,11 +14,11 @@ class Number(BaseModel):
 
 @app.get('/') #double decorator
 @app.get('/home', response_class=HTMLResponse)
-async def homepage(request: Request, title: str):
+async def homepage(request: Request):
     return templates.TemplateResponse('home.html', {"request": request})
 
 @app.post("/predict")
-async def predict(request: Request, title: str, files: UploadFile = File(...)):
+async def predict(request: Request, files: UploadFile = File(...)):
     contents = await files.read()
     result = prediction(contents)
     return templates.TemplateResponse('predict.html', {'request': request, 'result': result})
