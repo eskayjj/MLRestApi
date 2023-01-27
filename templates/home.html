@@ -6,17 +6,9 @@
         </div>
         <div>
             <body>
-                <form action="/uploadfiles/" enctype="multipart/form-data" method="post">
+                <form action="/predict/" enctype="multipart/form-data" method="post">
                     <input name="files" type="file" multiple>
-                    <input type="submit">
-                </form>
-                <form action="/predict/" method="post">
-                    <input type="submit", name="pred", value="Predict!">
-                    <!--<script>
-                        function hl(){
-                            location.href = "localhost:8000/predict";
-                        }
-                    </script>-->
+                    <input type="submit" value="Predict!">
                 </form>
             </body>
         </div>
