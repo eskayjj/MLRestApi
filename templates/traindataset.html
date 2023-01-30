@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block content %} 
+    <article>
+        <div class="media-body">
+            <h1>Train Dataset</h1>
+            {% if test_final == true %}
+                <h2>Trained!</h2>
+            {% else %}
+                <h2>Not Trained!</h2>
+            {% endif %}
+        </div>
+        <div>
+            <form action="/home/" method="get">
+                <button id="myButton">Home</button> 
+                <script type="text/javascript">
+                    document.getElementById("myButton").onclick = function () 
+                    {
+                        location.href = "home.html";
+                    };
+                </script>
+            </form>
+        </div>
+    </article>   
+{% endblock content %}
