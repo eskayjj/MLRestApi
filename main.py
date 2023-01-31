@@ -26,27 +26,48 @@ async def predict(request: Request, files: UploadFile = File(...)):
     result = prediction(contents)
     return templates.TemplateResponse('predict.html', {'request': request, 'result': result})
 
-@app.post("/train")
-async def predict(response: Response):
-    test_final = response
-    if test_final:
+# @app.post("/train")
+# async def predict(request: Request):
+#     test_final = request
+#     if test_final:
+#         print("TRAINING DONE")
+#     else:
+#         print("ERROR")
+#     return templates.TemplateResponse('traindataset.html', {'request': request, 'test_final': test_final})
+
+async def predict(fileList: list):
+    trained = await train(fileList)
+    if trained:
         print("TRAINING DONE")
     else:
         print("ERROR")
-    return templates.TemplateResponse('traindataset.html', {'response': response, 'test_final': test_final})
+    return trained
+   
 
 @app.post("/upload")
-async def upload(request: Request, files: List[UploadFile] = File(...)):
+async def upload(response: Response, files: List[UploadFile] = File(...)):
+    fileList = []
+    predicted = True
     for file in files:
         try:
             contents = await file.read()
             async with aiofiles.open(file.filename, 'wb') as f:
                 await f.write(contents)
+            fileList.append(contents)
+            
+            if(fileList.count == 4):
+                predicted = predict(fileList)
+                if not predicted:
+                    break
+                fileList.clear()
+            
         except Exception:
             return("Error in file upload")
         finally:
-            await file.close()
-    return{"message": f"Successfully uploaded {[file.filename for file in files]}", 'request': request}
+            await file.close()    
+        if(predicted):
+                return templates.TemplateResponse('traindataset.html', {'test_final': predicted})
+    return{"message": f"Successfully uploaded {[file.filename for file in files]}", 'response': response}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
