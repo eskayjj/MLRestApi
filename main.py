@@ -26,15 +26,6 @@ async def predict(request: Request, files: UploadFile = File(...)):
     result = prediction(contents)
     return templates.TemplateResponse('predict.html', {'request': request, 'result': result})
 
-# @app.post("/train")
-# async def predict(request: Request):
-#     test_final = request
-#     if test_final:
-#         print("TRAINING DONE")
-#     else:
-#         print("ERROR")
-#     return templates.TemplateResponse('traindataset.html', {'request': request, 'test_final': test_final})
-
 async def predict(fileList: list):
     trained = await train(fileList)
     if trained:
@@ -45,7 +36,7 @@ async def predict(fileList: list):
    
 
 @app.post("/upload")
-async def upload(response: Response, files: List[UploadFile] = File(...)):
+async def upload(response: Response, request: Request, files: List[UploadFile] = File(...)):
     fileList = []
     predicted = True
     for file in files:
@@ -66,7 +57,7 @@ async def upload(response: Response, files: List[UploadFile] = File(...)):
         finally:
             await file.close()    
         if(predicted):
-                return templates.TemplateResponse('traindataset.html', {'test_final': predicted})
+                return templates.TemplateResponse('traindataset.html', {'test_final': predicted, 'request': request})
     return{"message": f"Successfully uploaded {[file.filename for file in files]}", 'response': response}
 
 if __name__ == "__main__":

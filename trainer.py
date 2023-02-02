@@ -4,6 +4,7 @@ import torch.nn as nn
 from PIL import Image
 from torchvision import transforms
 from torchvision.models import resnet18, ResNet18_Weights
+from antbeemodel import trainmodel
 
 
 
@@ -18,11 +19,13 @@ model.fc = nn.Linear(num_ftrs, 2)
 model.load_state_dict(torch.load(PATH))
 model.eval()
 
-def train(file):
-    if file:
-        img = Image.open(io.BytesIO(file))
+def train(fileList):
+    if fileList:
+        trainmodel(fileList)
         torch.save(model.state_dict(), PATH)
+        return True
     else:
         raise Exception("File Error")
+        
    
    
