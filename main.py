@@ -7,13 +7,11 @@ from starlette.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from predictor import prediction
 from trainer import train
+import traceback
+import pickle
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
-
-class Number(BaseModel):
-    number:int
-
 
 @app.get('/') #double decorator
 @app.get('/home', response_class=HTMLResponse)
@@ -25,15 +23,7 @@ async def predict(request: Request, files: UploadFile = File(...)):
     contents = await files.read()
     result = prediction(contents)
     return templates.TemplateResponse('predict.html', {'request': request, 'result': result})
-
-async def predict(fileList: list):
-    trained = await train(fileList)
-    if trained:
-        print("TRAINING DONE")
-    else:
-        print("ERROR")
-    return trained
-   
+  
 
 @app.post("/upload")
 async def upload(response: Response, request: Request, files: List[UploadFile] = File(...)):
@@ -41,23 +31,24 @@ async def upload(response: Response, request: Request, files: List[UploadFile] =
     predicted = True
     for file in files:
         try:
-            contents = await file.read()
-            async with aiofiles.open(file.filename, 'wb') as f:
-                await f.write(contents)
-            fileList.append(contents)
-            
-            if(fileList.count == 4):
-                predicted = predict(fileList)
-                if not predicted:
-                    break
-                fileList.clear()
-            
+            with open(file.filename, 'wb') as f:
+                while contents := file.file.read():
+                    f.write(contents)  #create a folder to write train data into!
+                fileList.append(f)
+                print(f)
         except Exception:
+            traceback.print_exc()
             return("Error in file upload")
         finally:
-            await file.close()    
-        if(predicted):
-                return templates.TemplateResponse('traindataset.html', {'test_final': predicted, 'request': request})
+            file.file.close()  
+    print(fileList)
+    with open('trainset.dat', 'wb') as fl:
+        pickle.dump(fileList, fl) #TypeError: cannot pickle '_io.BufferedWriter' object
+    
+    train(fl)
+
+    if(predicted):
+            return templates.TemplateResponse('traindataset.html', {'test_final': predicted, 'request': request})
     return{"message": f"Successfully uploaded {[file.filename for file in files]}", 'response': response}
 
 if __name__ == "__main__":
