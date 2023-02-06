@@ -36,7 +36,7 @@ async def upload(response: Response, request: Request, files: List[UploadFile] =
     if os.path.isdir("./train"):
         os.chdir("..\\")
     print(os.getcwd())
-    
+
     dir = './trainer/train'
     if os.path.exists(dir):
         shutil.rmtree(dir)
