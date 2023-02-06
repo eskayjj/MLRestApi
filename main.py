@@ -9,9 +9,12 @@ from predictor import prediction
 from trainer import train
 import traceback
 import pickle
+import os
+import shutil
+from pathlib import Path
 
 app = FastAPI()
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory=os.path.abspath(os.path.expanduser('templates')))
 
 @app.get('/') #double decorator
 @app.get('/home', response_class=HTMLResponse)
@@ -29,13 +32,29 @@ async def predict(request: Request, files: UploadFile = File(...)):
 async def upload(response: Response, request: Request, files: List[UploadFile] = File(...)):
     fileList = []
     predicted = True
+    
+    if os.path.isdir("./train"):
+        os.chdir("..\\")
+    print(os.getcwd())
+    
+    dir = './trainer/train'
+    if os.path.exists(dir):
+        shutil.rmtree(dir)
+    os.mkdir(dir)
+    os.chdir(dir)
+
     for file in files:
         try:
             with open(file.filename, 'wb') as f:
                 while contents := file.file.read():
                     f.write(contents)  #create a folder to write train data into!
-                fileList.append(f)
-                print(f)
+                fileList.append(file.filename)
+                print(fileList)
+
+            w = open('filelist.txt', 'w')
+            w.write(str(fileList))
+            w.close()
+
         except Exception:
             traceback.print_exc()
             return("Error in file upload")
@@ -43,9 +62,10 @@ async def upload(response: Response, request: Request, files: List[UploadFile] =
             file.file.close()  
     print(fileList)
     with open('trainset.dat', 'wb') as fl:
-        pickle.dump(fileList, fl) #TypeError: cannot pickle '_io.BufferedWriter' object
-    
-    train(fl)
+        pickle.dump(fileList, fl) 
+
+    print(os.getcwd())
+    train(dir, fl)
 
     if(predicted):
             return templates.TemplateResponse('traindataset.html', {'test_final': predicted, 'request': request})

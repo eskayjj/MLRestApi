@@ -9,8 +9,9 @@ from torchvision.models import resnet18, ResNet18_Weights
 from torchvision import datasets, transforms
 from torch.optim import lr_scheduler
 import time
-import os
+from pathlib import Path, PureWindowsPath
 import copy
+import os
 
 
 PATH = 'C:/Users/User/AStar Intern/Prototype/RESTApi/FastAPI/abmodel.pth'
@@ -19,16 +20,12 @@ imsize = 256
 loader = transforms.Compose([transforms.Resize(imsize), transforms.ToTensor()])
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-model = resnet18(ResNet18_Weights.DEFAULT)
-num_ftrs = model.fc.in_features
-model.fc = nn.Linear(num_ftrs, 2)
-model.load_state_dict(torch.load(PATH))
-model.eval()
+def train(dir, fileList):
 
-def train(fileList):
-    
-    data_dir = ''
-
+    os.chdir("..\\")
+    windir = PureWindowsPath(os.getcwd())
+    print(windir)
+    #with open(dir + "/" + fileList[0])
     data_transforms = {
     'train': transforms.Compose([
         transforms.RandomResizedCrop(224),
@@ -38,7 +35,7 @@ def train(fileList):
     ])
     }
 
-    image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
+    image_datasets = {x: datasets.ImageFolder(windir,
                                           data_transforms[x])
                 for x in ['train']}
     dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
@@ -71,7 +68,7 @@ def train(fileList):
                 for inputs, labels in dataloaders[phase]:
                     inputs = inputs.to(device)
                     labels = labels.to(device)
-
+                    
                     # zero the parameter gradients
                     optimizer.zero_grad()
 
@@ -114,11 +111,19 @@ def train(fileList):
         # load best model weights
         model.load_state_dict(best_model_wts)
         return model
-                                          
+
+    model_conv = resnet18(ResNet18_Weights.DEFAULT)
+    for param in model_conv.parameters():
+        param.requires_grad = False
+    num_ftrs = model_conv.fc.in_features
+    model_conv.fc = nn.Linear(num_ftrs, 2)
+    model_conv.load_state_dict(torch.load(PATH))
+    model_conv.eval()
+                                        
     num_ftrs = model_conv.fc.in_features
     model_conv.fc = nn.Linear(num_ftrs, 2)  
-    
-    model_conv = model_conv.to(device)
+
+    model_conv = model_conv.to(device)    
 
     criterion = nn.CrossEntropyLoss()
 
@@ -127,6 +132,6 @@ def train(fileList):
     exp_lr_scheduler = lr_scheduler.StepLR(optimizer_conv, step_size=5, gamma=0.1)
     
     model_conv = train_models(model_conv, criterion, optimizer_conv,
-                        exp_lr_scheduler, num_epochs=25)
+                        exp_lr_scheduler, num_epochs=10)
     
     torch.save(model_conv.state_dict(), 'C:/Users/User/AStar Intern/Prototype/RESTApi/FastAPI/abmodel.pth')
