@@ -14,7 +14,7 @@ import copy
 import os
 
 
-PATH = 'C:/Users/User/AStar Intern/Prototype/RESTApi/FastAPI/abmodel.pth'
+PATH = './abmodel.pth' #change this to be relative path
 
 imsize = 256
 loader = transforms.Compose([transforms.Resize(imsize), transforms.ToTensor()])
@@ -134,4 +134,4 @@ def train(dir, fileList):
     model_conv = train_models(model_conv, criterion, optimizer_conv,
                         exp_lr_scheduler, num_epochs=10)
     
-    torch.save(model_conv.state_dict(), 'C:/Users/User/AStar Intern/Prototype/RESTApi/FastAPI/abmodel.pth')
+    torch.save(model_conv.state_dict(), './abmodel.pth')

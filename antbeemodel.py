@@ -116,23 +116,23 @@ for param in model_conv.parameters():
     param.requires_grad = False
 
 
-if __name__ == "__main__": 
+#if __name__ == "__main__": 
     # Parameters of newly constructed modules have requires_grad=True by default
-    num_ftrs = model_conv.fc.in_features
-    model_conv.fc = nn.Linear(num_ftrs, 2)
+num_ftrs = model_conv.fc.in_features
+model_conv.fc = nn.Linear(num_ftrs, 2)
 
-    model_conv = model_conv.to(device)
+model_conv = model_conv.to(device)
 
-    criterion = nn.CrossEntropyLoss()
+criterion = nn.CrossEntropyLoss()
 
-    # Observe that only parameters of final layer are being optimized as
-    # opposed to before.
-    optimizer_conv = optim.SGD(model_conv.fc.parameters(), lr=0.001, momentum=0.9)
+# Observe that only parameters of final layer are being optimized as
+# opposed to before.
+optimizer_conv = optim.SGD(model_conv.fc.parameters(), lr=0.001, momentum=0.9)
 
-    # Decay LR by a factor of 0.1 every 5 epochs
-    exp_lr_scheduler = lr_scheduler.StepLR(optimizer_conv, step_size=5, gamma=0.1)
+# Decay LR by a factor of 0.1 every 5 epochs
+exp_lr_scheduler = lr_scheduler.StepLR(optimizer_conv, step_size=5, gamma=0.1)
 
-    model_conv = train_model(model_conv, criterion, optimizer_conv,
-                            exp_lr_scheduler, num_epochs=25)
+model_conv = train_model(model_conv, criterion, optimizer_conv,
+                        exp_lr_scheduler, num_epochs=25)
 
-    torch.save(model_conv.state_dict(), 'C:/Users/User/AStar Intern/Prototype/RESTApi/FastAPI/abmodel.pth')
+torch.save(model_conv.state_dict(), 'C:/Users/User/AStar Intern/Prototype/RESTApi/FastAPI/abmodel.pth')

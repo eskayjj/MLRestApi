@@ -7,7 +7,7 @@
         <div>
             <body>
                 <form action="/predict/" enctype="multipart/form-data" method="post">
-                    <input name="files" type="file" multiple>
+                    <input name="file" type="file">
                     <input type="submit" value="Predict!">
                 </form>
                 <form action="/upload" enctype="multipart/form-data" method="post">
@@ -15,6 +15,9 @@
                     <input type="submit" value="Train Dataset!">
                 </form>
             </body>
+        </div>
+        <div>
+            
         </div>
     </article>
 {% endblock content %}

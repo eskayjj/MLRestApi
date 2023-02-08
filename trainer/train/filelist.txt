@@ -1,1 +1,1 @@
-['Ant_1.jpg', 'Ant_2.jpg', 'Ant_3.jfif', 'Ant_4.jfif', 'Ant_5.jpg']
+['Bee_1.jpg', 'Bee_2.jpg']
