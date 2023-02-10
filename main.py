@@ -4,7 +4,7 @@ from typing import List
 from fastapi import FastAPI, Request, File, UploadFile, Response
 from pydantic import BaseModel
 from starlette.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, ORJSONResponse
 from starlette_validation_uploadfile import ValidateUploadFileMiddleware
 from predictor import prediction
 from trainer import train
@@ -19,13 +19,12 @@ app = FastAPI()
 app.add_middleware(
         ValidateUploadFileMiddleware,
         app_path="/upload/",
-        max_size=1200000,
         file_type=["image/png", "image/jpeg", "image/jfif"]
 )
 app.add_middleware(
         ValidateUploadFileMiddleware,
         app_path="/predict/",
-        max_size=1200000,
+        #max_size=1200000,
         file_type=["image/png", "image/jpeg", "image/jfif"]
 )
 
@@ -34,6 +33,8 @@ templates = Jinja2Templates(directory=os.path.abspath(os.path.expanduser('templa
 class Results(BaseModel):
     result: str
     filename: str
+# class InputFile(BaseModel):
+#     filename: str
 
 
 @app.get('/') #double decorator
@@ -41,29 +42,59 @@ class Results(BaseModel):
 async def homepage(request: Request):
     return templates.TemplateResponse('home.html', {"request": request})
 
+
+# async def predict(inputFile: InputFile):   #change this to display JSON data to HTML
+#     try:
+#         with open(inputFile.filename, 'rw') as doc:
+#             contents = doc.read()
+#             print(contents)
+#     except Exception as e:
+#         return str(e)
+#         # return {"message": "There was an error uploading the file"}
+#     return {"hi": True}
+    # try:
+    #     contents = file.file.read()
+    #     print(file.filename)
+    #     final = Results(filename=file.filename, result=prediction(contents))
+    # except Exception:
+    #     return {"message": "There was an error uploading the file"}
+    # finally:
+    #     file.file.close()
+
+    # base64_encoded_image = base64.b64encode(contents).decode("utf-8")
+    # return{}
+
+# @app.post("/predict")
+# async def predict(request: Request, file: UploadFile):   #change this to display JSON data to HTML
+#     try:
+#         contents = file.file.read()
+#         print(file.filename)
+#         final = Results(filename=file.filename, result=prediction(contents))
+#     except Exception:
+#         return {"message": "There was an error uploading the file"}
+#     finally:
+#         file.file.close()
+#     # final.filename = str(file.filename)
+#     # final.result = prediction(contents)
+#     base64_encoded_image = base64.b64encode(contents).decode("utf-8")
+#     return templates.TemplateResponse('predict.html', {'request': request, 'final': final.dict(),  "myImage": base64_encoded_image})
+
 @app.post("/predict")
-async def predict(request: Request, file: UploadFile):   #change this to display JSON data to HTML
+async def predict(file: UploadFile):   #change this to display JSON data to HTML
     try:
         contents = file.file.read()
         print(file.filename)
-        final = Results(filename=file.filename, result=prediction(contents))
-    except Exception:
+        final = Results(filename=file.filename, result = prediction(contents))
+        base64_encoded_image = base64.b64encode(contents).decode("utf-8")
+    except Exception as e:
+        #return str(e)
         return {"message": "There was an error uploading the file"}
     finally:
         file.file.close()
-    # final.filename = str(file.filename)
-    # final.result = prediction(contents)
-    base64_encoded_image = base64.b64encode(contents).decode("utf-8")
-    return templates.TemplateResponse('predict.html', {'request': request, 'final': final.dict(),  "myImage": base64_encoded_image})
+    # return {"Test": True}
+    return {'final': final.dict(), "success": result,  "myImage": base64_encoded_image}
+    # return ORJSONResponse({'final': final.dict(), "success": result,  "myImage": base64_encoded_image})
   
-# {
-#     "request": xxx,
-#     "final": {
-#         "result": true,
-#         "filename": "testing"
-#     }    
-# }
-
 
 @app.post("/upload")
 async def upload(response: Response, request: Request, files: List[UploadFile] = File(...)):

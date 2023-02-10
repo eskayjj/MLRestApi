@@ -21,16 +21,17 @@ model.eval()
 
 def prediction(file):                           #return JSON data to main.py {filename: , results: }
     if file:                                    #implement Ants and Bees into this and remove numbers MNIST model
-        img = Image.open(io.BytesIO(file))
+        # img = Image.open(io.BytesIO(file))
+        img = Image.open(file)
         loadedimg = loader(img)
         loadedimg = loadedimg.unsqueeze(0)
         # loadedimg = loadedimg[0,:,:]
         # loadedimg = loadedimg[None,:,:]
         predicts = model(loadedimg)             #ValueError: expected 4D input (got 3D input)
-        print(predicts) 
+        # print(predicts) 
         predicts = predicts.argmax(axis=1)
         predicts = predicts.item()
-        print(predicts)
+        # print(predicts)
         if predicts == 0:
             predicts = "Ant"
             print("Ant")
