@@ -34,7 +34,7 @@ with open(new_picture["filename"], "rb") as image_file:
     
 picture = {"file": (new_picture["filename"], file)}
 
-requests_session.post(f"{url}/predict", files=picture)
+r = requests_session.post(f"{url}/predict", files=picture)
 #response = requests.post(f"{url}/predict", files=picture)
 
-print(requests_session.json())
+print(r.json())

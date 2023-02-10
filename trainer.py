@@ -135,3 +135,5 @@ def train(dir, fileList):
                         exp_lr_scheduler, num_epochs=10)
     
     torch.save(model_conv.state_dict(), './abmodel.pth')
+
+    return ("Trained")

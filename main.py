@@ -1,10 +1,9 @@
 import uvicorn
-import aiofiles
 from typing import List
 from fastapi import FastAPI, Request, File, UploadFile, Response
 from pydantic import BaseModel
 from starlette.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse, ORJSONResponse
+from fastapi.responses import HTMLResponse
 from starlette_validation_uploadfile import ValidateUploadFileMiddleware
 from predictor import prediction
 from trainer import train
@@ -14,92 +13,73 @@ import os
 import shutil
 import base64
 from pathlib import Path
+import uuid
 
 app = FastAPI()
 app.add_middleware(
         ValidateUploadFileMiddleware,
-        app_path="/upload/",
-        file_type=["image/png", "image/jpeg", "image/jfif"]
-)
-app.add_middleware(
-        ValidateUploadFileMiddleware,
-        app_path="/predict/",
+        app_path="/uploadfiles/",
         #max_size=1200000,
         file_type=["image/png", "image/jpeg", "image/jfif"]
 )
 
-templates = Jinja2Templates(directory=os.path.abspath(os.path.expanduser('templates')))
+#templates = Jinja2Templates(directory=os.path.abspath(os.path.expanduser('templates')))
 
-class Results(BaseModel):
-    result: str
+class Predictor(BaseModel):
     filename: str
-# class InputFile(BaseModel):
-#     filename: str
+
+class Trainer(BaseModel):
+    filename: List[str]
 
 
-@app.get('/') #double decorator
-@app.get('/home', response_class=HTMLResponse)
-async def homepage(request: Request):
-    return templates.TemplateResponse('home.html', {"request": request})
+@app.get('/', response_class=HTMLResponse)
+async def homepage():
+    content = """
+<div>
+<h1>Home Page</h1>
+</div>
+<div>
+<body>
+<form action="/uploadfiles/" enctype="multipart/form-data" method="post">
+<input name="files" type="file" multiple>
+<input type="submit" value="Upload Photo/Photos">
+</form>
+</body>
+</div>
+    """
+    return HTMLResponse(content=content)
 
 
-# async def predict(inputFile: InputFile):   #change this to display JSON data to HTML
-#     try:
-#         with open(inputFile.filename, 'rw') as doc:
-#             contents = doc.read()
-#             print(contents)
-#     except Exception as e:
-#         return str(e)
-#         # return {"message": "There was an error uploading the file"}
-#     return {"hi": True}
+# files: List[UploadFile] = File(...)
+@app.post("/uploadfiles/")
+async def create_upload_files(files: list[UploadFile]):
+    for file in files:
+        file.unique_id = str(uuid.uuid4())
+    return {"filenames": [file.filename for file in files], "id": [file.unique_id for file in files]} 
+
+@app.post("/predict/{result}")
+async def predict(file:Predictor): 
+    result = prediction(file.filename)
+    return {"result": result}
+
+
+
+#change this to display JSON data to HTML
     # try:
     #     contents = file.file.read()
-    #     print(file.filename)
-    #     final = Results(filename=file.filename, result=prediction(contents))
+    #     print("1", file.filename)
+    #     final = Results(filename=file.filename, result = prediction(contents))
+    #     base64_encoded_image = base64.b64encode(contents).decode("utf-8")
     # except Exception:
     #     return {"message": "There was an error uploading the file"}
     # finally:
     #     file.file.close()
-
-    # base64_encoded_image = base64.b64encode(contents).decode("utf-8")
-    # return{}
-
-# @app.post("/predict")
-# async def predict(request: Request, file: UploadFile):   #change this to display JSON data to HTML
-#     try:
-#         contents = file.file.read()
-#         print(file.filename)
-#         final = Results(filename=file.filename, result=prediction(contents))
-#     except Exception:
-#         return {"message": "There was an error uploading the file"}
-#     finally:
-#         file.file.close()
-#     # final.filename = str(file.filename)
-#     # final.result = prediction(contents)
-#     base64_encoded_image = base64.b64encode(contents).decode("utf-8")
-#     return templates.TemplateResponse('predict.html', {'request': request, 'final': final.dict(),  "myImage": base64_encoded_image})
-
-@app.post("/predict")
-async def predict(file: UploadFile):   #change this to display JSON data to HTML
-    try:
-        contents = file.file.read()
-        print(file.filename)
-        final = Results(filename=file.filename, result = prediction(contents))
-        base64_encoded_image = base64.b64encode(contents).decode("utf-8")
-    except Exception as e:
-        #return str(e)
-        return {"message": "There was an error uploading the file"}
-    finally:
-        file.file.close()
-    # return {"Test": True}
-    return {'final': final.dict(), "success": result,  "myImage": base64_encoded_image}
-    # return ORJSONResponse({'final': final.dict(), "success": result,  "myImage": base64_encoded_image})
+    # return {'final': final.dict(), "myImage": base64_encoded_image}
   
 
-@app.post("/upload")
-async def upload(response: Response, request: Request, files: List[UploadFile] = File(...)):
+@app.post("/train/{trained}")
+async def train(file:Trainer):
     fileList = []
-    predicted = True
     
     if os.path.isdir("./train"):
         os.chdir("..\\")
@@ -111,12 +91,12 @@ async def upload(response: Response, request: Request, files: List[UploadFile] =
     os.mkdir(dir)
     os.chdir(dir)
 
-    for file in files:
+    for file_ in file:
         try:
-            with open(file.filename, 'wb') as f:
-                while contents := file.file.read():
+            with open(file_.filename, 'wb') as f:
+                while contents := file_.file.read():
                     f.write(contents)  #create a folder to write train data into!
-                fileList.append(file.filename)
+                fileList.append(file_.filename)
                 print(fileList)
 
             w = open('filelist.txt', 'w')
@@ -129,15 +109,13 @@ async def upload(response: Response, request: Request, files: List[UploadFile] =
         finally:
             file.file.close()  
     print(fileList)
-    with open('trainset.dat', 'wb') as fl:
-        pickle.dump(fileList, fl) 
+    # with open('trainset.dat', 'wb') as fl:
+    #     pickle.dump(fileList, fl) 
 
     print(os.getcwd())
-    train(dir, fl)
+    trained = train(dir, fl)
 
-    if(predicted):
-            return templates.TemplateResponse('traindataset.html', {'test_final': predicted, 'request': request})
-    return{"message": f"Successfully uploaded {[file.filename for file in files]}", 'response': response}
-
+    return {"trained": trained}
+    
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)

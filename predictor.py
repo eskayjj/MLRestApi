@@ -19,7 +19,8 @@ model.fc = nn.Linear(num_ftrs, 2)
 model.load_state_dict(torch.load(PATH))
 model.eval()
 
-def prediction(file):                           #return JSON data to main.py {filename: , results: }
+def prediction(file):  
+    print(file)                         #return JSON data to main.py {filename: , results: }
     if file:                                    #implement Ants and Bees into this and remove numbers MNIST model
         # img = Image.open(io.BytesIO(file))
         img = Image.open(file)
