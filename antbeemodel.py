@@ -111,7 +111,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
     model.load_state_dict(best_model_wts)
     return model
 
-model_conv = torchvision.models.resnet18(ResNet18_Weights.DEFAULT)
+model_conv = torchvision.models.resnet18(weights = ResNet18_Weights.DEFAULT)
 for param in model_conv.parameters():
     param.requires_grad = False
 
@@ -135,4 +135,4 @@ if __name__ == "__main__":
     model_conv = train_model(model_conv, criterion, optimizer_conv,
                             exp_lr_scheduler, num_epochs=25)
 
-    torch.save(model_conv.state_dict(), 'C:/Users/User/AStar Intern/Prototype/RESTApi/FastAPI/abmodel.pth')
+    torch.save(model_conv.state_dict(), 'C:/Users/User/AStar Intern/Prototype/RESTApi/FastAPI/model.pth')

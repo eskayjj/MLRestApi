@@ -1,48 +1,68 @@
 import torch
-import io
 import torch.nn as nn
-import torchvision
-from PIL import Image
 import torch.optim as optim
 from torchvision import transforms
 from torchvision.models import resnet18, ResNet18_Weights
 from torchvision import datasets, transforms
 from torch.optim import lr_scheduler
 import time
-from pathlib import Path, PureWindowsPath
+from zipfile import ZipFile
 import copy
 import os
 
 
-PATH = './abmodel.pth' #change this to be relative path
+PATH = './model.pth' 
 
 imsize = 256
 loader = transforms.Compose([transforms.Resize(imsize), transforms.ToTensor()])
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-def train(dir, fileList):
+def trainer(dataset_zdir):
 
-    os.chdir("..\\")
-    windir = PureWindowsPath(os.getcwd())
-    print(windir)
-    #with open(dir + "/" + fileList[0])
+    #mimics server file
+    print("Dataset_zdir", dataset_zdir) 
+    print("Before", os.getcwd())
+    print(os.path.exists("./trainer"))
+    if os.path.exists("./trainer") == False:
+        os.mkdir("./trainer")
+    os.chdir("./trainer")   
+    print("After", os.getcwd())
+    with ZipFile(dataset_zdir, 'r') as zObject: # Extracting all the members of the zip into a specific location.
+        zObject.extractall(path=os.getcwd())  
+        print("Zipfile Name:", os.getcwd())
+        unzip_Zobject = str(os.getcwd())+"\\"+str(os.path.basename(dataset_zdir)).removesuffix('.zip') 
+        print("New filename:", unzip_Zobject) 
+        zObject.close()
+        os.chdir("../")
+    print("Final directory:", os.getcwd())
+
+    #Training existing model
+    dataset_dir = unzip_Zobject
+    print("Dataset Dir:", dataset_dir)
+    print("Current Dir:", os.getcwd())
     data_transforms = {
-    'train': transforms.Compose([
-        transforms.RandomResizedCrop(224),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    ])
+        'train': transforms.Compose([
+            transforms.RandomResizedCrop(224),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ]),
+        'val': transforms.Compose([
+            transforms.Resize(256),
+            transforms.CenterCrop(224),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ])
     }
 
-    image_datasets = {x: datasets.ImageFolder(windir,
+    image_datasets = {x: datasets.ImageFolder(os.path.join(dataset_dir, x),
                                           data_transforms[x])
-                for x in ['train']}
+                for x in ['train', 'val']}
     dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
                                              shuffle=True, num_workers=4)
-              for x in ['train']}
-    dataset_sizes = {x: len(image_datasets[x]) for x in ['train']}
-    class_names = image_datasets['train'].classes
+              for x in ['train', 'val']}
+    dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
+    #class_names = image_datasets['train'].classes
 
     def train_models(model, criterion, optimizer, scheduler, num_epochs=10):
         since = time.time()
@@ -55,7 +75,7 @@ def train(dir, fileList):
             print('-' * 10)
 
             # Each epoch has a training and validation phase
-            for phase in ['train']:
+            for phase in ['train', 'val']:
                 if phase == 'train':
                     model.train()  # Set model to training mode
                 else:
@@ -112,7 +132,7 @@ def train(dir, fileList):
         model.load_state_dict(best_model_wts)
         return model
 
-    model_conv = resnet18(ResNet18_Weights.DEFAULT)
+    model_conv = resnet18(weights = ResNet18_Weights.DEFAULT)
     for param in model_conv.parameters():
         param.requires_grad = False
     num_ftrs = model_conv.fc.in_features
@@ -134,6 +154,6 @@ def train(dir, fileList):
     model_conv = train_models(model_conv, criterion, optimizer_conv,
                         exp_lr_scheduler, num_epochs=10)
     
-    torch.save(model_conv.state_dict(), './abmodel.pth')
+    torch.save(model_conv.state_dict(), './model.pth')
 
     return ("Trained")
