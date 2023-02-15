@@ -6,7 +6,7 @@ from torchvision import transforms
 from torchvision.models import ResNet18_Weights
 
 
-PATH = './model.pth'
+PATH = './app/model.pth'
 
 imsize = 256
 loader = transforms.Compose([transforms.Resize(imsize), transforms.ToTensor()])

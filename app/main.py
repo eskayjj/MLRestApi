@@ -7,8 +7,8 @@ from fastapi import FastAPI, File, UploadFile
 from pydantic import BaseModel
 from fastapi.responses import HTMLResponse
 from starlette_validation_uploadfile import ValidateUploadFileMiddleware
-from predictor import predictor
-from trainer import trainer
+from app.predictor import predictor
+from app.trainer import trainer
 #from starlette.templating import Jinja2Templates
 
 

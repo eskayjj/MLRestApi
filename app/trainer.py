@@ -11,7 +11,7 @@ import copy
 import os
 
 
-PATH = './model.pth' 
+PATH = './app/model.pth' 
 
 imsize = 256
 loader = transforms.Compose([transforms.Resize(imsize), transforms.ToTensor()])
@@ -154,6 +154,6 @@ def trainer(dataset_zdir):
     model_conv = train_models(model_conv, criterion, optimizer_conv,
                         exp_lr_scheduler, num_epochs=10)
     
-    torch.save(model_conv.state_dict(), './model.pth')
+    torch.save(model_conv.state_dict(), './app/model.pth')
 
     return ("Trained")
