@@ -1,10 +1,10 @@
 import requests
 import traceback
 
-url = "http://localhost:8000"
+url = "http://0.0.0.0:80" #http://localhost:8000
 
 new_picture = {
-    "filename": 'C:/Users/User/AStar Intern/Prototype/RESTApi/Dataset/AntBee/train/ants/Ant_1.jpg'  #serialise this address
+    "filename": '/C:/Users/User/AStar Intern/Prototype/RESTApi/Dataset/AntBee/train/ants/Ant_1.jpg'  #serialise this address
 }
 
 try:

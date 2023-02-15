@@ -14,6 +14,7 @@ loader = transforms.Compose([transforms.Resize(imsize), transforms.ToTensor()])
 model = torchvision.models.resnet18(weights = ResNet18_Weights.DEFAULT)
 num_ftrs = model.fc.in_features
 model.fc = nn.Linear(num_ftrs, 2)
+print(torch.cuda.is_available())
 model.load_state_dict(torch.load(PATH))
 model.eval()
 
