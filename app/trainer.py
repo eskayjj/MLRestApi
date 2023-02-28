@@ -10,16 +10,17 @@ from zipfile import ZipFile
 import copy
 import os
 
-
+#Existing local directory of model, needs to be dynamic for deployment
 PATH = './app/model.pth' 
 
-imsize = 256
+
+imsize = 256    #This value has to be dynamic based on the tensor length of the model
 loader = transforms.Compose([transforms.Resize(imsize), transforms.ToTensor()])
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def trainer(dataset_zdir):
 
-    #mimics server file
+    #Extract the data within the zip file into a local directory (need to change to server database for production)
     print("Dataset_zdir", dataset_zdir) 
     print("Before", os.getcwd())
     print(os.path.exists("./trainer"))
@@ -36,7 +37,7 @@ def trainer(dataset_zdir):
         os.chdir("../")
     print("Final directory:", os.getcwd())
 
-    #Training existing model
+    #Training existing model using new dataset
     dataset_dir = unzip_Zobject
     print("Dataset Dir:", dataset_dir)
     print("Current Dir:", os.getcwd())

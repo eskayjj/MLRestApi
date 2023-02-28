@@ -9,18 +9,8 @@ from fastapi.responses import HTMLResponse
 from starlette_validation_uploadfile import ValidateUploadFileMiddleware
 from app.predictor import predictor
 from app.trainer import trainer
-#from starlette.templating import Jinja2Templates
 
-#Basic declaration for an calling a FastAPI object
 app = FastAPI()
-# app.add_middleware(
-#         ValidateUploadFileMiddleware,
-#         app_path="/uploadfiles/",
-#         #max_size=1200000,
-#         file_type=["application/zip", "image/jpeg", "image/png", "image/jfif"]
-# )
-
-#templates = Jinja2Templates(directory=os.path.abspath(os.path.expanduser('templates')))
 
 #Classes to format various key-value pairs and their data-types
 class predict(BaseModel):

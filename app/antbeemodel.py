@@ -3,16 +3,12 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.optim import lr_scheduler
-import numpy as np
 import torchvision
 from torchvision import datasets, transforms
-from torchvision.models import resnet18, ResNet18_Weights
-import matplotlib.pyplot as plt
+from torchvision.models import ResNet18_Weights
 import time
 import os
 import copy
-
-plt.ion()   # interactive mode
 
 # Data augmentation and normalization for training
 # Just normalization for validation
