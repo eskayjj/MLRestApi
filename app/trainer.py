@@ -9,10 +9,27 @@ import time
 from zipfile import ZipFile
 import copy
 import os
+import io
+import pymongo, gridfs
+from gridfs import GridFS
+from pymongo import MongoClient
+
+groupId = '63f71e18e441883061675b2b'
+clusterName = 'Cluster0'
 
 #Existing local directory of model, needs to be dynamic for deployment
-PATH = './app/model.pth' 
+PATH = 'https://cloud.mongodb.com/api/atlas/v1.0/groups/{groupId}/clusters/{clusterName}/fts/indexes' 
 
+con = pymongo.MongoClient("mongodb+srv://eskayjj:mcdiyMzQ8FagUkax@cluster0.v6l9bv7.mongodb.net/?retryWrites=true&w=majority")
+db = con.test
+db = con[MONGO_DB]
+fs = gridfs.GridFS(db)
+
+def dbToModel(db, fs):
+    with open('model.pth', 'wb') as fileObject:
+        fileObject.write(fs.get(ObjectId(db.fs.files._id)).read())
+    return fileObject
+                     
 
 imsize = 256    #This value has to be dynamic based on the tensor length of the model
 loader = transforms.Compose([transforms.Resize(imsize), transforms.ToTensor()])
@@ -138,7 +155,10 @@ def trainer(dataset_zdir):
         param.requires_grad = False
     num_ftrs = model_conv.fc.in_features
     model_conv.fc = nn.Linear(num_ftrs, 2)
-    model_conv.load_state_dict(torch.load(PATH))
+    
+    finalModel = dbToModel(db, fs)
+    model_conv.load_state_dict(finalModel)
+    #model_conv.load_state_dict(torch.load(PATH))
     model_conv.eval()
                                         
     num_ftrs = model_conv.fc.in_features

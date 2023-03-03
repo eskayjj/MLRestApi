@@ -1,7 +1,7 @@
 import requests
 import traceback
 
-url = "http://127.0.0.1:8000" #http://localhost:8000
+url = "http://127.0.0.1:8080" #http://localhost:8000
 
 #Comment/Uncomment this for use of /predict/ API
 new_picture = {

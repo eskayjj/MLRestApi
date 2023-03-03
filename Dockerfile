@@ -9,6 +9,7 @@ FROM python:3.10.10-bullseye
 WORKDIR /fastapi-docker
 
 # pip install all dependencies
+RUN pip install --upgrade pip
 COPY ./requirements.txt /fastapi-docker/requirements.txt
 RUN pip3 install --timeout=300 --no-cache-dir --upgrade -r /fastapi-docker/requirements.txt
 
@@ -19,5 +20,5 @@ COPY ./app /fastapi-docker/app
 COPY ./gcr.sh /gcr.sh
 RUN chmod +x /gcr.sh
 
-EXPOSE 8080
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--workers", "2"]
+EXPOSE 80
+CMD python -m uvicorn app.main:app --host 0.0.0.0 --port 80 --workers 2
