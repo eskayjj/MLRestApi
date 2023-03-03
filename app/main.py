@@ -3,10 +3,8 @@ import os
 import shutil
 import uuid
 from typing import List
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, HTTPException
 from pydantic import BaseModel
-from fastapi.responses import HTMLResponse
-from starlette_validation_uploadfile import ValidateUploadFileMiddleware
 from app.predictor import predictor
 from app.trainer import trainer
 
@@ -25,24 +23,28 @@ async def homepage():
     message = {"success": True, "message": "Successfully linked"}
     return message
 
-#API to upload files to the server
+#API to upload a zipfile to the server
 @app.post("/uploadfiles/")  #a post decorator with a url of "/uploadfiles/"
-async def upload_files(files: List[UploadFile] = File(...)):
+async def upload_files(zipFile: UploadFile):
     
-    #Mimics server file
+    #Check uploaded content type
+    if zipFile.content_type != "application/x-zip-compressed":
+        raise HTTPException(400, detail="Invalid document type")
+    
+    #Mimics database
     print(os.getcwd()) 
-    os.chdir("./trainer")   
+    os.chdir("./app/trainer")   
     print(os.getcwd())
 
     #Upload files to server and generates a unique ID for each
-    for file in files:
-        try:
-            with open(file.filename, "wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
-            file.unique_id = str(uuid.uuid4())  
-        except Exception as e:
-            return{"message": e}
-    return {"filenames": [file.filename for file in files], "id": [file.unique_id for file in files]} 
+    file = zipFile
+    try:
+        with open(file.filename, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        file.unique_id = str(uuid.uuid4())  
+    except Exception as e:
+        return{"message": e}
+    return {"success": True,"filename": file.filename, "id": file.unique_id} 
 
 #API that predicts the picture based on existing NN model
 @app.post("/predict/")

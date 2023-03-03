@@ -12,5 +12,5 @@ db = con[MONGO_DB]
 fs = gridfs.GridFS(db)
 
 with open('model.pth', 'wb') as fileObject:
-    fileObject.write(fs.get(ObjectId(docId))
+    fileObject.write(fs.get(ObjectId(db.fs.files._id))
                      .read() )
