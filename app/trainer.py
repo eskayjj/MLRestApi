@@ -22,7 +22,7 @@ PATH = 'https://cloud.mongodb.com/api/atlas/v1.0/groups/{groupId}/clusters/{clus
 
 con = pymongo.MongoClient("mongodb+srv://eskayjj:mcdiyMzQ8FagUkax@cluster0.v6l9bv7.mongodb.net/?retryWrites=true&w=majority")
 db = con.test
-db = con[MONGO_DB]
+db = con[clusterName]
 fs = gridfs.GridFS(db)
 
 def dbToModel(db, fs):

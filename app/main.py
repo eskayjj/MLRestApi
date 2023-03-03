@@ -57,4 +57,4 @@ async def train(zipFile:UploadFile):
     
 #only runs this file when ran as main file    
 if __name__ == "__main__":      
-    uvicorn.run(app, host="0.0.0.0", port=8080, workers=2)
+    uvicorn.run(app, host="0.0.0.0", port=8080)
