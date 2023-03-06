@@ -1,13 +1,12 @@
 import uvicorn
 import os
 import shutil
-import uuid
-import tempfile
 from typing import List
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from pydantic import BaseModel
 from app.predictor import predictor
 from app.trainer import trainer
+from app.model_to_db import modelToDB
 
 app = FastAPI()
 
@@ -18,27 +17,28 @@ class predict(BaseModel):
 #API that shows if API is successfully connected 
 @app.get('/')   #a get decorator with a base url of "/"
 async def homepage():
-    message = {"success": True, "message": "Successfully linked"}
+    message = {"success": True, "message": "Successfully linked to MLAPI"}
     return message
 
 #API to upload a zipfile to the server
 @app.post("/uploadmodel/")  #a post decorator with a url of "/uploadmodel/"
-async def upload_files(file: UploadFile):   
-    #Mimics database
-    # print(os.getcwd()) 
-    # os.chdir("./app/trainer")   
-    # print(os.getcwd())
-
+def upload_files(file: UploadFile):  
     #Upload files to server and generates a unique ID for each
-    try:
-        buffer = TemporaryFile()
+    try:  
+        if os.path.exists("./temp") == True:
+            shutil.rmtree("./temp") 
+        os.mkdir('./temp')
+        os.chdir('./temp')
         with open(file.filename, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-        file.unique_id = str(uuid.uuid4()) 
-        modelToDB(buffer, file.unique_id) 
+        objectID = modelToDB(buffer.name)
+        os.chdir('../')
+        shutil.rmtree("./temp")
+        with open('ids.txt', "a") as f:
+            f.write("Filename: " + file.filename + "    Object ID: " + objectID + "\n")
     except Exception as e:
-        return{"message": e}
-    return {"success": True,"filename": file.filename, "id": file.unique_id} 
+        return{"success": False, "message": str(e)}
+    return {"success": True,"filename": file.filename, "objectID": objectID} 
 
 #API that predicts the picture based on existing NN model
 @app.post("/predict/")
