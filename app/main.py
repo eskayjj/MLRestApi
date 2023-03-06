@@ -2,6 +2,7 @@ import uvicorn
 import os
 import shutil
 import uuid
+import tempfile
 from typing import List
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from pydantic import BaseModel
@@ -24,15 +25,17 @@ async def homepage():
 @app.post("/uploadmodel/")  #a post decorator with a url of "/uploadmodel/"
 async def upload_files(file: UploadFile):   
     #Mimics database
-    print(os.getcwd()) 
-    os.chdir("./app/trainer")   
-    print(os.getcwd())
+    # print(os.getcwd()) 
+    # os.chdir("./app/trainer")   
+    # print(os.getcwd())
 
     #Upload files to server and generates a unique ID for each
     try:
+        buffer = TemporaryFile()
         with open(file.filename, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-        file.unique_id = str(uuid.uuid4())  
+        file.unique_id = str(uuid.uuid4()) 
+        modelToDB(buffer, file.unique_id) 
     except Exception as e:
         return{"message": e}
     return {"success": True,"filename": file.filename, "id": file.unique_id} 

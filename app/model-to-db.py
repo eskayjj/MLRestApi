@@ -9,11 +9,12 @@ MONGO_DB = "Cluster0"
 
 
 # Using GridFS to chunk a large model file into MongoDB
-myclient = pymongo.MongoClient("mongodb+srv://eskayjj:mcdiyMzQ8FagUkax@cluster0.v6l9bv7.mongodb.net/?retryWrites=true&w=majority")
-db = myclient.test
-mydb = myclient[MONGO_DB]
-fs = gridfs.GridFS(mydb)
-model_name = 'model.pth'
+async def modelToDB(file, id):
+    myclient = pymongo.MongoClient("mongodb+srv://eskayjj:mcdiyMzQ8FagUkax@cluster0.v6l9bv7.mongodb.net/?retryWrites=true&w=majority")
+    db = myclient.test
+    mydb = myclient[MONGO_DB]
+    fs = gridfs.GridFS(mydb)
+    #model_name = 'model.pth'
 
-with io.FileIO(model_name, 'r') as fileObject:
-    docId = fs.put(fileObject, filename=model_name)
+    with io.FileIO(file, 'r') as fileObject:
+        docId = fs.put(fileObject, filename=model_name)
