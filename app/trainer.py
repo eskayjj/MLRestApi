@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import shutil
 from torchvision import transforms
 from torchvision.models import resnet18, ResNet18_Weights
 from torchvision import datasets, transforms
@@ -14,37 +15,27 @@ import pymongo, gridfs
 from gridfs import GridFS
 from pymongo import MongoClient
 
+
 groupId = '63f71e18e441883061675b2b'
 clusterName = 'Cluster0'
 
 #Existing local directory of model, needs to be dynamic for deployment
-PATH = 'https://cloud.mongodb.com/api/atlas/v1.0/groups/{groupId}/clusters/{clusterName}/fts/indexes' 
-
-con = pymongo.MongoClient("mongodb+srv://eskayjj:mcdiyMzQ8FagUkax@cluster0.v6l9bv7.mongodb.net/?retryWrites=true&w=majority")
-db = con.test
-db = con[clusterName]
-fs = gridfs.GridFS(db)
-
-def dbToModel(db, fs):
-    with open('model.pth', 'wb') as fileObject:
-        fileObject.write(fs.get(ObjectId(db.fs.files._id)).read())
-    return fileObject
-                     
+#PATH = 'https://cloud.mongodb.com/api/atlas/v1.0/groups/{groupId}/clusters/{clusterName}/fts/indexes'                    
 
 imsize = 256    #This value has to be dynamic based on the tensor length of the model
 loader = transforms.Compose([transforms.Resize(imsize), transforms.ToTensor()])
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-def trainer(dataset_zdir):
+def trainer(dataset_zdir, modelName):
 
     #Extract the data within the zip file into a local directory (need to change to server database for production)
     print("Dataset_zdir", dataset_zdir) 
     print("Before", os.getcwd())
-    print(os.path.exists("./trainer"))
-    if os.path.exists("./trainer") == False:
-        os.mkdir("./trainer")
-    os.chdir("./trainer")   
-    print("After", os.getcwd())
+    # print(os.path.exists("./trainer"))
+    # if os.path.exists("./trainer") == False:
+    #     os.mkdir("./trainer")
+    # os.chdir("./trainer")   
+    # print("After", os.getcwd())
     with ZipFile(dataset_zdir, 'r') as zObject: # Extracting all the members of the zip into a specific location.
         zObject.extractall(path=os.getcwd())  
         print("Zipfile Name:", os.getcwd())
@@ -58,6 +49,8 @@ def trainer(dataset_zdir):
     dataset_dir = unzip_Zobject
     print("Dataset Dir:", dataset_dir)
     print("Current Dir:", os.getcwd())
+    # if os.path.exists("./trainer") == True:
+    #         shutil.rmtree("./trainer")
     data_transforms = {
         'train': transforms.Compose([
             transforms.RandomResizedCrop(224),
@@ -156,9 +149,7 @@ def trainer(dataset_zdir):
     num_ftrs = model_conv.fc.in_features
     model_conv.fc = nn.Linear(num_ftrs, 2)
     
-    finalModel = dbToModel(db, fs)
-    model_conv.load_state_dict(finalModel)
-    #model_conv.load_state_dict(torch.load(PATH))
+    model_conv.load_state_dict(torch.load(os.path.join('./app/', modelName)))
     model_conv.eval()
                                         
     num_ftrs = model_conv.fc.in_features
@@ -175,6 +166,6 @@ def trainer(dataset_zdir):
     model_conv = train_models(model_conv, criterion, optimizer_conv,
                         exp_lr_scheduler, num_epochs=10)
     
-    torch.save(model_conv.state_dict(), './app/model.pth')
+    torch.save(model_conv.state_dict(), os.path.join('./app/', modelName))
 
-    return ("Trained")
+    return ("Success")

@@ -7,6 +7,8 @@ from pydantic import BaseModel
 from app.predictor import predictor
 from app.trainer import trainer
 from app.model_to_db import modelToDB
+from app.db_to_model import dbToModel
+import torch
 
 app = FastAPI()
 
@@ -49,13 +51,35 @@ async def predict(file:predict):
     return {"result": result, "success": success}
   
 #API that train existing NN model based on new dataset
-@app.post("/train/")
-async def train(zipFile:UploadFile):
+@app.post("/train/{id}")
+async def train(zipFile:UploadFile, id:str):
 #Check uploaded content type
     if zipFile.content_type != "application/x-zip-compressed":
         raise HTTPException(400, detail="Invalid document type")
+    if type(id) != str:
+        raise HTTPException(400, detail="No Valid ID")
+    try:
+        modelName = dbToModel(id)
+        if os.path.exists("./temp") == True:
+            shutil.rmtree("./temp") 
+        os.mkdir('./temp')
+        os.chdir('./temp')
+        with open(zipFile.filename, "wb") as buffer:
+            shutil.copyfileobj(zipFile.file, buffer)
+        trained = trainer(zipFile.filename, modelName)   
+        print("Before", os.getcwd())
+        if os.path.exists("./temp") == True:
+             shutil.rmtree("./temp") 
+        os.mkdir('./temp')
+        print(os.getcwd())
+        shutil.copyfile(os.path.join('./app/' , modelName), os.path.join('./temp/', modelName))
+        objectID = modelToDB(modelName)
+        shutil.rmtree("./temp")
+        with open('ids.txt', "a") as f:
+            f.write("Filename: " + modelName + "    Object ID: " + objectID + "\n")
+    except Exception as e:
+        return{"success": False, "message": str(e)}
 
-    trained = trainer(zipFile.filename)
     return {"trained": trained}
     
 #only runs this file when ran as main file    

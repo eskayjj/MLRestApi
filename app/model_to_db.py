@@ -13,6 +13,7 @@ def modelToDB(fileName):
     db = con[MONGO_DB]
     fs = GridFS(db)
 
+    #Prevents duplicate models from passing into DB
     print("FileName: ", fileName)
     query = fs.find_one({"filename" : fileName}) # equivalent to find_one
     
