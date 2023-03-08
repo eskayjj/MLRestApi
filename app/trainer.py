@@ -31,11 +31,6 @@ def trainer(dataset_zdir, modelName):
     #Extract the data within the zip file into a local directory (need to change to server database for production)
     print("Dataset_zdir", dataset_zdir) 
     print("Before", os.getcwd())
-    # print(os.path.exists("./trainer"))
-    # if os.path.exists("./trainer") == False:
-    #     os.mkdir("./trainer")
-    # os.chdir("./trainer")   
-    # print("After", os.getcwd())
     with ZipFile(dataset_zdir, 'r') as zObject: # Extracting all the members of the zip into a specific location.
         zObject.extractall(path=os.getcwd())  
         print("Zipfile Name:", os.getcwd())
@@ -49,8 +44,6 @@ def trainer(dataset_zdir, modelName):
     dataset_dir = unzip_Zobject
     print("Dataset Dir:", dataset_dir)
     print("Current Dir:", os.getcwd())
-    # if os.path.exists("./trainer") == True:
-    #         shutil.rmtree("./trainer")
     data_transforms = {
         'train': transforms.Compose([
             transforms.RandomResizedCrop(224),

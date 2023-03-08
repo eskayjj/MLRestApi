@@ -1,4 +1,4 @@
-import io
+import os
 import pymongo, gridfs
 from bson import ObjectId
 from gridfs import GridFS
@@ -19,7 +19,10 @@ def dbToModel(id):
         modelName = str(modelName.get('filename')) 
     except Exception as e:
         return(str(e))
+    print(os.getcwd())
+    os.chdir('./app')
     with open(modelName, 'wb') as fileObject:
         fileObject.write(fs.get(ObjectId(id))
                         .read())
+    os.chdir('../')
     return(modelName)

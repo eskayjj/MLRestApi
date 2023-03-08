@@ -1,20 +1,20 @@
 import uvicorn
 import os
 import shutil
+import traceback
 from typing import List
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, UploadFile, HTTPException
 from pydantic import BaseModel
 from app.predictor import predictor
 from app.trainer import trainer
 from app.model_to_db import modelToDB
 from app.db_to_model import dbToModel
-import torch
 
 app = FastAPI()
 
 #Classes to format various key-value pairs and their data-types
-class predict(BaseModel):
-    filename: str
+# class predict(BaseModel):
+#     filename: str
 
 #API that shows if API is successfully connected 
 @app.get('/')   #a get decorator with a base url of "/"
@@ -43,12 +43,28 @@ def upload_files(file: UploadFile):
     return {"success": True,"filename": file.filename, "objectID": objectID} 
 
 #API that predicts the picture based on existing NN model
-@app.post("/predict/")
-async def predict(file:predict): 
-    result = predictor(file.filename)
-    if (result == 'Ant' or result == 'Bee'):
-        success = True
-    return {"result": result, "success": success}
+@app.post("/predict/{id}")
+def predict(file:UploadFile, id:str): 
+    if type(id) != str:
+            raise HTTPException(400, detail="No Valid ID")
+    try:
+        modelName = dbToModel(id)
+        if os.path.exists("./temp") == True:
+            shutil.rmtree("./temp") 
+        os.mkdir('./temp')
+        os.chdir('./temp')
+        with open(file.filename, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        filePath= os.path.abspath(file.filename)
+        result = predictor(filePath, modelName)
+        os.chdir('../')
+        shutil.rmtree("./temp")
+        if (result != 'Ant' and result != 'Bee'):
+            return{"success": False, "message": 'Image is not an Ant or Bee'}
+    except Exception as e:
+        traceback.print_exc()
+        return{"success": False, "message": str(e)}
+    return {"result": result, "success": True}
   
 #API that train existing NN model based on new dataset
 @app.post("/train/{id}")
