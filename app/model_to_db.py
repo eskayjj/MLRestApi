@@ -1,15 +1,18 @@
 import io
 from gridfs import GridFS
 from pymongo import MongoClient
+from decouple import config
 
 # MONGO_HOST = "127.0.0.1"
 # MONGO_PORT = 27017
+username = config('user', default='')
+password = config('password', default='')
+clusterAdd = config('clusterAdd', default='')
 MONGO_DB = "Cluster0"
-
 
 # Using GridFS to chunk a large model file into MongoDB
 def modelToDB(fileName):
-    con = MongoClient("mongodb+srv://eskayjj:mcdiyMzQ8FagUkax@cluster0.v6l9bv7.mongodb.net/?retryWrites=true&w=majority")
+    con = MongoClient(f"mongodb+srv://{username}:{password}@{clusterAdd}/?retryWrites=true&w=majority")
     db = con[MONGO_DB]
     fs = GridFS(db)
 
