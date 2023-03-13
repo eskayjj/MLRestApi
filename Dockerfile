@@ -15,10 +15,7 @@ RUN pip3 install --timeout=300 --no-cache-dir --upgrade -r /fastapi-docker/requi
 
 # Copy app files
 COPY ./app /fastapi-docker/app
-COPY ./gcComputePull.sh /fastapi-docker/
-COPY ./gcComputePush.sh /fastapi-docker/
-RUN chmod +x ./gcComputePush.sh
-RUN chmod +x ./gcComputePull.sh
+COPY ./.env /fastapi-docker/
 
 EXPOSE 8080
 CMD python -m uvicorn app.main:app --host 0.0.0.0 --port 8080 
