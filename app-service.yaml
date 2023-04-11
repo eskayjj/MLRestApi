@@ -16,6 +16,36 @@ spec:
     spec:
       containers:
       - name: fastapi
-        image: fastapi-docker:latest
+        image: asia.gcr.io/inspiring-wares-377802/fastapi-docker@sha256:5a1d726ce152338630adaa938c4dcea677b63a1e5314358ece4a37f09303c776
         ports:
         - containerPort: 8080
+        env:
+        - name: username
+          valueFrom:
+            secretKeyRef:
+              name: mongo-secret
+              key: mongo-user
+        - name: password
+          valueFrom:
+            secretKeyRef:
+              name: mongo-secret
+              key: mongo-user
+        - name: mongo-service
+          valueFrom:
+            configMapKeyRef:
+              name: mongo-config
+              key: mongo-url
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-service
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: fastapi
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 30001 #30000-32767
